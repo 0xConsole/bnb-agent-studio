@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}BNB Agent Studio Marketplace — DeFi AI Agents on BSC{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<div class="hero">
+    <h1>The Smart Money Era is Here</h1>
+    <p>Discover, compare, and activate autonomous DeFi AI agents on BNB Smart Chain. Four categories, all first-class. No blockchain experience required.</p>
+    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
+        <a href="#categories" class="btn btn-primary">Browse Categories</a>
+        <button id="demo-btn" class="btn btn-secondary">▶ Run Live Demo</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="icon">🤖</div>
+            <div class="value">{{ stats.total_agents }}</div>
+            <div class="label">Active Agents</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">💰</div>
+            <div class="value">${{ "%.1f".format(stats.total_tvl / 1000000) if stats.total_tvl >= 1000000 else "%.0f".format(stats.total_tvl / 1000) }}{{ "M" if stats.total_tvl >= 1000000 else "K" }}</div>
+            <div class="label">TVL Managed</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">⚡</div>
+            <div class="value">{{ "%.1f".format(stats.total_actions / 1000) }}K</div>
+            <div class="label">Total Actions</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">🔗</div>
+            <div class="value">{{ stats.total_protocols }}</div>
+            <div class="label">BSC Protocols</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">📡</div>
+            <div class="value" id="chain-block">{{ chain_status.mainnet.latest_block | default(45000000) }}</div>
+            <div class="label">BSC Latest Block</div>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div id="categories">
+        <div class="section-title">
+            🏪 Agent Categories
+            <span class="badge">All 4 — Equal Depth</span>
+        </div>
+        <div class="category-grid">
+            {% for slug, cat in categories.items() %}
+            <a href="/category/{{ slug }}" class="category-card" style="--cat-color: {{ cat.color }};">
+                <div class="cat-icon">{{ cat.icon }}</div>
+                <h3>{{ cat.name }}</h3>
+                <p class="tagline">{{ cat.tagline }}</p>
+                <div class="cat-stats">
+                    <span>📊 {{ stats.agents_per_category[slug] }} agents</span>
+                    <span>🎯 {{ cat.metrics|length }} metrics</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Featured Agents -->
+    <div class="section-title">
+        ⭐ Featured Agents
+        <span class="badge">{{ featured_agents|length }} agents</span>
+    </div>
+    <div class="agent-grid">
+        {% for agent in featured_agents %}
+        {% set cat = categories[agent.category] %}
+        <a href="/agent/{{ agent.id }}" class="agent-card" style="--cat-color: {{ cat.color }};">
+            <div class="agent-header">
+                <div class="agent-name">{{ agent.name }}</div>
+                <div class="agent-score">Score {{ agent.score }}</div>
+            </div>
+            <div class="agent-chain">
+                <span>🔗 {{ agent.chain }}</span>
+                <span>&middot;</span>
+                <span>{{ agent.service }}</span>
+                <span>&middot;</span>
+                <span>⭐ {{ agent.rating }}</span>
+            </div>
+            <p class="agent-desc">{{ agent.description }}</p>
+            <div class="agent-tags">
+                {% for tag in agent.tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            <div class="agent-footer">
+                <span class="price"><strong>${{ "%.2f".format(agent.price_per_action) }}</strong> / action</span>
+                <span class="badge badge-green">{{ agent.success_rate }}% success</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Chain Status Panel -->
+    <div class="section-title">📡 BSC Chain Status (Live)</div>
+    <div class="detail-card">
+        <div class="chain-panel">
+            <div class="chain-card">
+                <div class="c-title">🟢 BSC Mainnet (ChainID 56)</div>
+                <div class="c-row"><span class="c-label">Latest Block</span><span class="c-value" id="chain-block-main">{{ chain_status.mainnet.latest_block | default(45000000) }}</span></div>
+                <div class="c-row"><span class="c-label">Gas Price</span><span class="c-value" id="chain-gas">{{ chain_status.mainnet.gas_price_gwei | default("1.00") }} Gwei</span></div>
+                <div class="c-row"><span class="c-label">RPC</span><span class="c-value">bsc-dataseed.binance.org</span></div>
+            </div>
+            <div class="chain-card">
+                <div class="c-title">🧪 BSC Testnet (ChainID 97)</div>
+                <div class="c-row"><span class="c-label">Latest Block</span><span class="c-value" id="chain-testnet-block">{{ chain_status.testnet.latest_block | default(44000000) }}</span></div>
+                <div class="c-row"><span class="c-label">Demo Wallet</span><span class="c-value">{{ chain_status.demo_wallet.address[:10] }}...{{ chain_status.demo_wallet.address[-4:] }}</span></div>
+                <div class="c-row"><span class="c-label">Testnet BNB</span><span class="c-value">{{ chain_status.demo_wallet.balance_bnb | default(0) }} BNB</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo Wallet Config -->
+    <div class="section-title">⚙️ Demo Configuration</div>
+    <div class="detail-card">
+        <p style="color: var(--text-secondary); margin-bottom: 12px;">Enter your wallet address to use for agent activation demos. Default uses the provided testnet wallet.</p>
+        <input type="text" id="wallet-input" placeholder="0x..." style="width:100%; padding:10px; background:var(--bg-tertiary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:monospace;">
+    </div>
+</div>
+{% endblock %}

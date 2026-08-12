@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — BNB Agent Studio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-tertiary); margin-bottom:20px;">
+        <a href="/">Marketplace</a>
+        <span>/</span>
+        <span style="color:var(--text-primary);">Dashboard</span>
+    </div>
+
+    <div class="hero" style="padding: 20px 0;">
+        <h1 style="font-size: 32px;">📊 Marketplace Dashboard</h1>
+        <p>Real-time overview of all DeFi AI agents on BNB Smart Chain</p>
+    </div>
+
+    <!-- Global Stats -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="icon">🤖</div>
+            <div class="value">{{ stats.total_agents }}</div>
+            <div class="label">Total Agents</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">💰</div>
+            <div class="value">${{ "%.1f".format(stats.total_tvl / 1000000) }}M</div>
+            <div class="label">Total TVL</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">⚡</div>
+            <div class="value">{{ "%.0f".format(stats.total_actions / 1000) }}K</div>
+            <div class="label">Total Actions</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">📡</div>
+            <div class="value" id="chain-block">{{ chain_status.mainnet.latest_block | default(45000000) }}</div>
+            <div class="label">BSC Block</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">🔗</div>
+            <div class="value">{{ stats.total_protocols }}</div>
+            <div class="label">Protocols</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">🚀</div>
+            <div class="value">{{ activations }}</div>
+            <div class="label">Activations</div>
+        </div>
+    </div>
+
+    <!-- Per-Category Stats -->
+    <div class="section-title">🏪 Category Breakdown — All 4 Equal Depth</div>
+    <div class="category-grid">
+        {% for slug, cat in categories.items() %}
+        {% set cs = cat_stats[slug] %}
+        <a href="/category/{{ slug }}" class="category-card" style="--cat-color: {{ cat.color }};">
+            <div class="cat-icon">{{ cat.icon }}</div>
+            <h3>{{ cat.name }}</h3>
+            <p class="tagline">{{ cat.tagline }}</p>
+            <div class="cat-stats" style="flex-direction:column; gap:4px; align-items:flex-start;">
+                <span>🤖 {{ cs.agent_count }} agents</span>
+                <span>💰 ${{ "{:,.0f}".format(cs.total_tvl) }}</span>
+                <span>⭐ Avg score {{ cs.avg_score }}</span>
+                <span>⚡ {{ "{:,}".format(cs.total_actions) }} actions</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Top Agents by TVL -->
+    <div class="section-title">🏆 Top Agents by TVL</div>
+    <div class="detail-card">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+                <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                    <th style="padding:8px;">#</th>
+                    <th style="padding:8px;">Agent</th>
+                    <th style="padding:8px;">Category</th>
+                    <th style="padding:8px;">Score</th>
+                    <th style="padding:8px;">TVL</th>
+                    <th style="padding:8px;">Success</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in top_agents %}
+                {% set cat = categories[agent.category] %}
+                <tr style="border-bottom:1px solid var(--border); transition: var(--transition);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background=''">
+                    <td style="padding:8px; color:var(--text-tertiary);">{{ loop.index }}</td>
+                    <td style="padding:8px;"><a href="/agent/{{ agent.id }}" style="color:var(--text-primary); font-weight:600;">{{ agent.name }}</a></td>
+                    <td style="padding:8px;"><span class="badge" style="background: {{ cat.color }}22; color: {{ cat.color }};">{{ cat.icon }} {{ cat.name }}</span></td>
+                    <td style="padding:8px; color:var(--accent);">{{ agent.score }}</td>
+                    <td style="padding:8px;">${{ "{:,.0f}".format(agent.metrics.tvl_usd) }}</td>
+                    <td style="padding:8px;"><span style="color:var(--green);">{{ agent.success_rate }}%</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Chain Status -->
+    <div class="section-title">📡 Live Chain Status</div>
+    <div class="detail-card">
+        <div class="chain-panel">
+            <div class="chain-card">
+                <div class="c-title">🟢 BSC Mainnet (ChainID 56)</div>
+                <div class="c-row"><span class="c-label">Latest Block</span><span class="c-value" id="chain-block">{{ chain_status.mainnet.latest_block | default(45000000) }}</span></div>
+                <div class="c-row"><span class="c-label">Gas Price</span><span class="c-value" id="chain-gas">{{ chain_status.mainnet.gas_price_gwei | default("1.00") }} Gwei</span></div>
+                <div class="c-row"><span class="c-label">RPC</span><span class="c-value">bsc-dataseed.binance.org</span></div>
+            </div>
+            <div class="chain-card">
+                <div class="c-title">🧪 BSC Testnet (ChainID 97)</div>
+                <div class="c-row"><span class="c-label">Latest Block</span><span class="c-value" id="chain-testnet-block">{{ chain_status.testnet.latest_block | default(44000000) }}</span></div>
+                <div class="c-row"><span class="c-label">Demo Wallet</span><span class="c-value">{{ chain_status.demo_wallet.address[:10] }}...{{ chain_status.demo_wallet.address[-4:] }}</span></div>
+                <div class="c-row"><span class="c-label">Testnet BNB</span><span class="c-value">{{ chain_status.demo_wallet.balance_bnb | default(0) }} BNB</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

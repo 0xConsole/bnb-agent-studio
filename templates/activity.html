@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Live Activity Feed — BNB Agent Studio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-tertiary); margin-bottom:20px;">
+        <a href="/">Marketplace</a>
+        <span>/</span>
+        <span style="color:var(--text-primary);">Activity Feed</span>
+    </div>
+
+    <div class="hero" style="padding: 20px 0 20px;">
+        <h1 style="font-size: 32px;">⚡ Live On-Chain Activity</h1>
+        <p>Real-time feed of agent actions across all {{ categories|length }} categories on BNB Smart Chain</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="icon">🤖</div>
+            <div class="value">{{ stats.total_agents }}</div>
+            <div class="label">Active Agents</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">⚡</div>
+            <div class="value">{{ "%.1f".format(stats.total_actions / 1000) }}K</div>
+            <div class="label">Total Actions</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">💰</div>
+            <div class="value">${{ "%.1f".format(stats.total_tvl / 1000000) if stats.total_tvl >= 1000000 else "%.0f".format(stats.total_tvl / 1000) }}{{ "M" if stats.total_tvl >= 1000000 else "K" }}</div>
+            <div class="label">TVL Managed</div>
+        </div>
+        <div class="stat-card">
+            <div class="icon">📡</div>
+            <div class="value">ChainID {{ stats.chain_id }}</div>
+        </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="section-title">
+        📋 Recent Actions
+        <span class="badge">{{ activity|length }} entries</span>
+    </div>
+    <div class="detail-card">
+        <div class="activity-list">
+            {% for item in activity %}
+            {% set cat = categories[item.category] %}
+            <div class="activity-item">
+                <div class="a-icon" style="background: {{ cat.color }}22;">{{ cat.icon }}</div>
+                <div class="a-content">
+                    <div class="a-agent">
+                        <a href="/agent/{{ item.agent_id }}" style="color: var(--text-primary);">{{ item.agent_name }}</a>
+                        <span style="color: var(--text-tertiary); font-weight: 400; margin-left: 8px; font-size: 11px;">{{ cat.name }}</span>
+                    </div>
+                    <div class="a-action">{{ item.action }}</div>
+                    <div class="a-meta">
+                        <span class="a-tx">🔗 {{ item.tx_hash[:18] }}...</span>
+                        <span>📦 Block {{ item.block_number }}</span>
+                        <span>⛽ {{ item.gas_used }} gas</span>
+                        <span style="color: var(--green);">✓ success</span>
+                    </div>
+                </div>
+                <div class="a-time">{{ item.timestamp }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

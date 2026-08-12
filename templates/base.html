@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BNB Agent Studio Marketplace{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="/" class="nav-brand">
+            <span class="logo">🤖</span>
+            <span>BNB Agent <span class="accent">Studio</span></span>
+        </a>
+        <div class="nav-links">
+            <a href="/">Marketplace</a>
+            <a href="/category/rebalancing">Rebalancing</a>
+            <a href="/category/grid-trading">Grid Trading</a>
+            <a href="/category/yield-optimisation">Yield</a>
+            <a href="/category/health-factor">Health Factor</a>
+            <a href="/activity">Activity</a>
+            <a href="/dashboard">Dashboard</a>
+        </div>
+        <div class="nav-status">
+            <span class="dot"></span>
+            <span>BSC Live</span>
+        </div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>BNB Agent Studio Marketplace &mdash; <a href="https://github.com/0xConsole/bnb-agent-studio">github.com/0xConsole/bnb-agent-studio</a></p>
+        <p>Powered by BNB Smart Chain &middot; ERC-8004 Agent Registry &middot; Built for The Smart Money Era Hackathon</p>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-title">Title</div>
+        <div class="toast-msg">Message</div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

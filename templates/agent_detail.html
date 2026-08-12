@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}{{ agent.name }} — BNB Agent Studio{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <div style="display:flex; gap:8px; align-items:center; font-size:13px; color:var(--text-tertiary); margin-bottom:20px;">
+        <a href="/">Marketplace</a>
+        <span>/</span>
+        <a href="/category/{{ agent.category }}">{{ category.name }}</a>
+        <span>/</span>
+        <span style="color:var(--text-primary);">{{ agent.name }}</span>
+    </div>
+
+    <!-- Agent Header -->
+    <div class="agent-detail-header" style="--cat-color: {{ category.color }};">
+        <div class="agent-detail-avatar">{{ category.icon }}</div>
+        <div class="agent-detail-info" style="flex:1;">
+            <h1>{{ agent.name }}</h1>
+            <p class="tagline">{{ agent.description }}</p>
+            <div class="agent-detail-meta">
+                <span>🔗 {{ agent.chain }}</span>
+                <span>&middot; ERC-8004 ID: #{{ agent.erc8004_id }}</span>
+                <span>&middot; Service: {{ agent.service }}</span>
+                <span>&middot; ⭐ {{ agent.rating }}/5</span>
+                <span>&middot; Score {{ agent.score }}</span>
+                {% if agent.x402_enabled %}
+                <span>&middot; <span style="color:var(--green);">x402 payments ✓</span></span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <!-- Left Column: Metrics + Description -->
+        <div>
+            <!-- Live Metrics -->
+            <div class="detail-card">
+                <h2>📊 Live Performance Metrics</h2>
+                <div class="metrics-grid">
+                    {% for metric in category.metrics %}
+                    {% set val = agent.metrics[metric.key] %}
+                    <div class="metric-box" style="--cat-color: {{ category.color }};">
+                        <div class="m-label">{{ metric.label }}</div>
+                        <div class="m-value">
+                            {% if metric.unit == '$' %}${{ "{:,.2f}".format(val) }}
+                            {% elif metric.unit == '%' %}{{ val }}%
+                            {% else %}{{ val }}{% endif %}
+                        </div>
+                        <div class="m-unit">{{ metric.unit if metric.unit not in ['$', '%', ''] else '' }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- What This Agent Does -->
+            <div class="detail-card">
+                <h2>📋 What This Agent Does</h2>
+                <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px;">
+                    {{ category.description }}
+                </p>
+                <h3 style="margin-top: 20px;">Tags & Protocols</h3>
+                <div class="agent-tags" style="margin-top: 8px;">
+                    {% for tag in agent.tags %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="detail-card">
+                <h2>⚡ Recent On-Chain Activity</h2>
+                <div class="activity-list">
+                    {% for item in activity %}
+                    <div class="activity-item">
+                        <div class="a-icon" style="background: {{ category.color }}22;">{{ category.icon }}</div>
+                        <div class="a-content">
+                            <div class="a-agent">{{ item.agent_name }}</div>
+                            <div class="a-action">{{ item.action }}</div>
+                            <div class="a-meta">
+                                <span class="a-tx">{{ item.tx_hash[:18] }}...</span>
+                                <span>Block {{ item.block_number }}</span>
+                                <span>Gas {{ item.gas_used }}</span>
+                            </div>
+                        </div>
+                        <div class="a-time">{{ item.timestamp }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Related Agents -->
+            {% if related_agents %}
+            <div class="detail-card">
+                <h2>🔗 Related {{ category.name }} Agents</h2>
+                <div class="agent-grid" style="grid-template-columns: 1fr;">
+                    {% for ra in related_agents %}
+                    <a href="/agent/{{ ra.id }}" class="agent-card" style="--cat-color: {{ category.color }};">
+                        <div class="agent-header">
+                            <span class="agent-name">{{ ra.name }}</span>
+                            <div class="agent-score">Score {{ ra.score }}</div>
+                        </div>
+                        <p class="agent-desc">{{ ra.description }}</p>
+                        <div class="agent-footer">
+                            <span class="price"><strong>${{ "%.2f".format(ra.price_per_action) }}</strong> / action</span>
+                            <span class="badge badge-green">{{ ra.success_rate }}% success</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Activate + Chain Data + Agent Info -->
+        <div>
+            <!-- Activate Panel -->
+            <div class="detail-card">
+                <h2>🚀 Activate Agent</h2>
+                <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 16px;">
+                    Price: <strong style="color: var(--accent);">${{ "%.2f".format(agent.price_per_action) }}</strong> per action<br>
+                    Success Rate: <strong style="color: var(--green);">{{ agent.success_rate }}%</strong><br>
+                    Total Actions: <strong>{{ "{:,}".format(agent.total_actions) }}</strong>
+                </p>
+                <button class="btn-activate-lg btn-activate" data-agent-id="{{ agent.id }}">Activate {{ agent.name }}</button>
+                <p style="color: var(--text-tertiary); font-size: 11px; margin-top: 12px;">
+                    Activation uses demo wallet. On mainnet, this would create a scoped session via Altana.
+                </p>
+            </div>
+
+            <!-- On-Chain Identity -->
+            <div class="detail-card">
+                <h2>⛓️ On-Chain Identity</h2>
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">ERC-8004 ID</span>
+                        <span style="font-family:monospace;">#{{ agent.erc8004_id }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">Registry</span>
+                        <span style="font-family:monospace; font-size:11px;">{{ agent.registry[:10] }}...{{ agent.registry[-4:] }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">Owner</span>
+                        <span style="font-family:monospace;">{{ agent.owner_short }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">Agent URI</span>
+                        <span style="font-size:10px;">{{ agent.agent_uri[:30] }}...</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">Created</span>
+                        <span>{{ agent.created }}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:var(--text-tertiary);">Last Active</span>
+                        <span style="color:var(--green);">{{ agent.last_active }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chain Status -->
+            <div class="detail-card">
+                <h2>📡 BSC Chain Status</h2>
+                <div class="chain-card" style="margin-bottom: 8px;">
+                    <div class="c-title">🟢 Mainnet (ID 56)</div>
+                    <div class="c-row"><span class="c-label">Block</span><span class="c-value" id="chain-block">{{ chain_status.mainnet.latest_block | default(45000000) }}</span></div>
+                    <div class="c-row"><span class="c-label">Gas</span><span class="c-value" id="chain-gas">{{ chain_status.mainnet.gas_price_gwei | default("1.00") }} Gwei</span></div>
+                </div>
+                <div class="chain-card">
+                    <div class="c-title">🧪 Testnet (ID 97)</div>
+                    <div class="c-row"><span class="c-label">Block</span><span class="c-value" id="chain-testnet-block">{{ chain_status.testnet.latest_block | default(44000000) }}</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
