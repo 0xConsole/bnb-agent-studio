@@ -103,8 +103,7 @@ async def home(request: Request):
     stats = agent_service.get_marketplace_stats()
     featured = agent_service.get_all_agents()[:8]
     chain_status = await onchain.get_chain_status()
-    return templates.TemplateResponse("home.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "home.html", {
         "categories": categories,
         "stats": stats,
         "featured_agents": featured,
@@ -124,8 +123,7 @@ async def category_page(request: Request, slug: str):
     cat_stats = agent_service.get_category_stats(slug)
     activity = agent_service.get_activity_feed(limit=10, category=slug)
 
-    return templates.TemplateResponse("category.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "category.html", {
         "category_slug": slug,
         "category": cat_config,
         "agents": cat_agents,
@@ -148,8 +146,7 @@ async def agent_detail(request: Request, agent_id: str):
     activity = agent_service.get_activity_feed(limit=5, category=agent["category"])
     chain_status = await onchain.get_chain_status()
 
-    return templates.TemplateResponse("agent_detail.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "agent_detail.html", {
         "agent": agent,
         "category": cat_config,
         "categories": categories,
@@ -166,8 +163,7 @@ async def activity_page(request: Request):
     activity = agent_service.get_activity_feed(limit=50)
     stats = agent_service.get_marketplace_stats()
 
-    return templates.TemplateResponse("activity.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "activity.html", {
         "activity": activity,
         "categories": categories,
         "stats": stats,
@@ -190,8 +186,7 @@ async def dashboard_page(request: Request):
     all_agents = sorted(agent_service.get_all_agents(), key=lambda a: a["metrics"]["tvl_usd"], reverse=True)
     top_agents = all_agents[:10]
 
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
+    return templates.TemplateResponse(request, "dashboard.html", {
         "categories": categories,
         "stats": stats,
         "cat_stats": cat_stats,
